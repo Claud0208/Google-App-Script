@@ -1,0 +1,53 @@
+function calculateAgeDifference() {
+  // Get the active spreadsheet
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Specify the sheet name
+  var sheetName = "TYPHOID";
+
+  // Get the sheet by name
+  var sheet = spreadsheet.getSheetByName(sheetName);
+
+  // Get the range of the data (assuming data starts from the second row, change as needed)
+  var dataRange = sheet.getDataRange();
+  var data = dataRange.getValues();
+
+  // Find the column indices for "DOB," "DAdmit," "AgeYears," "AgeMons," and "AgeDays"
+  var headers = data[0];
+  var dobIndex = headers.indexOf("DOB");
+  var dAdmitIndex = headers.indexOf("DAdmit");
+  var ageYearsIndex = headers.indexOf("AgeYears");
+  var ageMonsIndex = headers.indexOf("AgeMons");
+  var ageDaysIndex = headers.indexOf("AgeDays");
+
+  // Calculate age difference for "AgeYears," "AgeMons," and "AgeDays" based on "DAdmit" and update the columns
+  for (var i = 1; i < data.length; i++) {
+    var dob = new Date(data[i][dobIndex]);
+    var dAdmit = new Date(data[i][dAdmitIndex]);
+
+    if (!isNaN(dob) && !isNaN(dAdmit)) {
+      var ageDifference = dAdmit - dob; // Difference in milliseconds
+      var ageInYears = ageDifference / (1000 * 60 * 60 * 24 * 365.25); // Milliseconds to years
+      var ageInMonths = ageDifference / (1000 * 60 * 60 * 24 * 30.44); // Milliseconds to months
+      var ageInDays = ageDifference / (1000 * 60 * 60 * 24); // Milliseconds to days
+
+      // Remove decimals and floor the values
+      ageInYears = Math.floor(ageInYears);
+      ageInMonths = Math.floor(ageInMonths);
+      ageInDays = Math.floor(ageInDays);
+
+      // Compute two decimals if age years is less than or equal to 1
+      if (ageInYears < 1) {
+        ageInYears = ageDifference / (1000 * 60 * 60 * 24 * 365.25); // Milliseconds to years
+        ageInYears = ageInYears.toFixed(2);
+      }
+
+      data[i][ageYearsIndex] = ageInYears;
+      data[i][ageMonsIndex] = ageInMonths;
+      data[i][ageDaysIndex] = ageInDays;
+    }
+  }
+
+  // Set the updated values back to the "AgeYears," "AgeMons," and "AgeDays" columns
+  dataRange.setValues(data);
+}
