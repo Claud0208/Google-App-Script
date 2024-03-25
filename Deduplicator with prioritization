@@ -1,0 +1,53 @@
+function LeptoDedupe() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("LEPTO");
+  var data = sheet.getDataRange().getValues();
+  var formulas = sheet.getDataRange().getFormulas();
+
+  var header = data[0];
+  var newData = [header];
+  var uniqueNames = {};
+  var deletedRows = 0;
+  var replacedRows = 0; // Initialize the counter for replaced rows
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var formulaRow = formulas[i];
+
+    var name = row[header.indexOf("FullName")];
+    var existingRow = uniqueNames[name];
+    var labResultIndex = header.indexOf("LabRes");
+    var outcomeIndex = header.indexOf("Outcome"); // Index of the "Outcome" column
+
+    // Check if the Outcome is "D" or "Died"
+    var hasPriorityOutcome = row[outcomeIndex] === "D" || row[outcomeIndex] === "Died";
+
+    // Define LabRes criteria with the desired sequence of prioritization
+    var labResult = row[labResultIndex];
+    var hasPositiveLabResult = labResult === "Positive MAT" || labResult === "Positive PCR and MAT" || labResult === "Positive PCR" || labResult === "Positive";
+
+    if (
+      !existingRow ||
+      hasPositiveLabResult ||
+      (labResult && !existingRow[labResultIndex]) ||
+      row.filter(value => value !== "").length > existingRow.filter(value => value !== "").length ||
+      hasPriorityOutcome
+    ) {
+      // Update the unique row with the current row if it has more data, positive LabResult, LabResult data, or priority Outcome
+      if (existingRow) {
+        replacedRows++; // Increment replacedRows counter when a row is replaced
+      }
+      uniqueNames[name] = row;
+    } else {
+      deletedRows++;
+    }
+  }
+
+  newData = newData.concat(Object.values(uniqueNames));
+
+  sheet.clearContents();
+  sheet.getRange(1, 1, newData.length, newData[0].length).setValues(newData);
+
+  Logger.log("Number of deleted rows: " + deletedRows);
+  Logger.log("Number of replaced rows: " + replacedRows); // Log the count of replaced rows
+}
