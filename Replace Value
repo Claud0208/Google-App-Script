@@ -1,0 +1,17 @@
+function replaceSex() {
+  var sheet = SpreadsheetApp.getActiveSheet(); // Get the active sheet
+  var range = sheet.getDataRange(); // Get the entire data range of the sheet
+  var values = range.getValues(); // Get the values in the data range
+
+  var columnHeaders = values[0]; // Get the column headers
+  var columnIndex = columnHeaders.indexOf("Sex"); // Get the index of the "Sex" column
+
+  for (var i = 1; i < values.length; i++) { // Iterate through each row, starting at row 2
+    var cellValue = values[i][columnIndex]; // Get the value in the "Sex" column for the current row
+    if (cellValue.toString().toLowerCase().includes("m")) { // Check if the cell value contains "m" (case-insensitive)
+      range.getCell(i+1, columnIndex+1).setValue("M"); // Replace the cell with "M"
+    } else if (cellValue.toString().toLowerCase().includes("f")) { // Check if the cell value contains "f" (case-insensitive)
+      range.getCell(i+1, columnIndex+1).setValue("F"); // Replace the cell with "F"
+    }
+  }
+}
