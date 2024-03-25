@@ -1,0 +1,23 @@
+function updateCaseClassification() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = "LEPTO"; // Replace with the name of your specific sheet
+  var sheet = spreadsheet.getSheetByName(sheetName);
+  var data = sheet.getDataRange().getValues();
+  var headerRow = data[0];
+  var labResIndex = headerRow.indexOf("LabRes");
+  var caseClassificationIndex = headerRow.indexOf("CaseClassification");
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var labResValue = row[labResIndex].toString().toLowerCase();
+    var caseClassification = "Suspect";
+
+    if (labResValue.includes("positive mat") || labResValue.includes("positive pcr")) {
+      caseClassification = "Confirmed";
+    } else if (labResValue.includes("positive rdt")) {
+      caseClassification = "Probable";
+    }
+
+    sheet.getRange(i + 1, caseClassificationIndex + 1).setValue(caseClassification);
+  }
+}
